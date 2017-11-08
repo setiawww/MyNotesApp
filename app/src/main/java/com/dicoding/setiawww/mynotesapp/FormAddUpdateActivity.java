@@ -1,7 +1,10 @@
 package com.dicoding.setiawww.mynotesapp;
 
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,6 +22,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static com.dicoding.setiawww.mynotesapp.db.DatabaseContract.CONTENT_URI;
+import static com.dicoding.setiawww.mynotesapp.db.DatabaseContract.NoteColumns.DATE;
+import static com.dicoding.setiawww.mynotesapp.db.DatabaseContract.NoteColumns.DESCRIPTION;
+import static com.dicoding.setiawww.mynotesapp.db.DatabaseContract.NoteColumns.TITLE;
+
 public class FormAddUpdateActivity extends AppCompatActivity
         implements View.OnClickListener{
     EditText edtTitle, edtDescription;
@@ -35,7 +43,7 @@ public class FormAddUpdateActivity extends AppCompatActivity
     public static int RESULT_DELETE = 301;
 
     private Note note;
-    private int position;
+    //private int position;
     private NoteHelper noteHelper;
 
     @Override
@@ -51,22 +59,45 @@ public class FormAddUpdateActivity extends AppCompatActivity
         noteHelper = new NoteHelper(this);
         noteHelper.open();
 
-        note = getIntent().getParcelableExtra(EXTRA_NOTE);
+        //note = getIntent().getParcelableExtra(EXTRA_NOTE);
 
-        if (note != null){
-            position = getIntent().getIntExtra(EXTRA_POSITION, 0);
-            isEdit = true;
+        //if (note != null){
+        //    position = getIntent().getIntExtra(EXTRA_POSITION, 0);
+        //    isEdit = true;
+        //}
+
+        Uri uri = getIntent().getData();
+
+        if (uri != null) {
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            if (cursor != null){
+                if(cursor.moveToFirst()) note = new Note(cursor);
+                cursor.close();
+            }
         }
 
         String actionBarTitle = null;
         String btnTitle = null;
 
-        if (isEdit){
+        //if (isEdit){
+        //    actionBarTitle = "Ubah";
+        //    btnTitle = "Update";
+        //    edtTitle.setText(note.getTitle());
+        //    edtDescription.setText(note.getDescription());
+        //}else{
+        //    actionBarTitle = "Tambah";
+        //    btnTitle = "Simpan";
+        //}
+
+        if (note != null) {
+            isEdit = true;
+
             actionBarTitle = "Ubah";
             btnTitle = "Update";
+
             edtTitle.setText(note.getTitle());
             edtDescription.setText(note.getDescription());
-        }else{
+        } else {
             actionBarTitle = "Tambah";
             btnTitle = "Simpan";
         }
@@ -102,30 +133,51 @@ public class FormAddUpdateActivity extends AppCompatActivity
             }
 
             if (!isEmpty){
-                Note newNote = new Note();
-                newNote.setTitle(title);
-                newNote.setDescription(description);
+                //Note newNote = new Note();
+                //newNote.setTitle(title);
+                //newNote.setDescription(description);
 
-                Intent intent = new Intent();
+                //Intent intent = new Intent();
 
                 /*
                 Jika merupakan edit setresultnya UPDATE, dan jika bukan maka setresultnya ADD
                  */
-                if (isEdit){
-                    newNote.setDate(note.getDate());
-                    newNote.setId(note.getId());
-                    noteHelper.update(newNote);
+                //if (isEdit){
+                //    newNote.setDate(note.getDate());
+                //    newNote.setId(note.getId());
+                //    noteHelper.update(newNote);
 
-                    intent.putExtra(EXTRA_POSITION, position);
-                    setResult(RESULT_UPDATE, intent);
+                //    intent.putExtra(EXTRA_POSITION, position);
+                //    setResult(RESULT_UPDATE, intent);
+                //    finish();
+                //}else{
+                //    newNote.setDate(getCurrentDate());
+                //    noteHelper.insert(newNote);
+
+                //    setResult(RESULT_ADD);
+                //    finish();
+                //}
+
+                // Gunakan contentvalues untuk menampung data
+                ContentValues values = new ContentValues();
+                values.put(TITLE,title);
+                values.put(DESCRIPTION,description);
+
+                if (isEdit) {
+
+                    getContentResolver().update(getIntent().getData(),values, null, null);
+
+                    setResult(RESULT_UPDATE);
                     finish();
-                }else{
-                    newNote.setDate(getCurrentDate());
-                    noteHelper.insert(newNote);
+                } else {
+                    values.put(DATE,getCurrentDate());
+
+                    getContentResolver().insert(CONTENT_URI,values);
 
                     setResult(RESULT_ADD);
                     finish();
                 }
+
             }
         }
     }
@@ -187,10 +239,12 @@ public class FormAddUpdateActivity extends AppCompatActivity
                         if (isDialogClose){
                             finish();
                         }else{
-                            noteHelper.delete(note.getId());
-                            Intent intent = new Intent();
-                            intent.putExtra(EXTRA_POSITION, position);
-                            setResult(RESULT_DELETE, intent);
+                            //noteHelper.delete(note.getId());
+                            //Intent intent = new Intent();
+                            //intent.putExtra(EXTRA_POSITION, position);
+                            //setResult(RESULT_DELETE, intent);
+                            getContentResolver().delete(getIntent().getData(),null,null);
+                            setResult(RESULT_DELETE, null);
                             finish();
                         }
                     }

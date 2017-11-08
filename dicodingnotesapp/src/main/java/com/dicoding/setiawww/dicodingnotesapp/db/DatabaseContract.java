@@ -1,11 +1,11 @@
-package com.dicoding.setiawww.mynotesapp.db;
+package com.dicoding.setiawww.dicodingnotesapp.db;
 
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
 /**
- * Created by setiawww on 19/10/2017.
+ * Created by setiawww on 8/11/2017.
  */
 
 public class DatabaseContract {
@@ -39,3 +39,4 @@ public class DatabaseContract {
         return cursor.getLong( cursor.getColumnIndex(columnName) );
     }
 }
+
